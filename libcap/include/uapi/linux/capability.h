@@ -7,6 +7,7 @@
  *
  * See here for the libcap library ("POSIX draft" compliance):
  *
+ * https://git.kernel.org/pub/scm/libs/libcap/libcap.git/refs/
  * http://www.kernel.org/pub/linux/libs/security/linux-privs/
  */
 
@@ -14,8 +15,6 @@
 #define _UAPI_LINUX_CAPABILITY_H
 
 #include <linux/types.h>
-
-struct task_struct;
 
 /* User-level do most of the mapping between kernel and user
    capabilities based on the version tag given by the kernel. The
@@ -62,16 +61,32 @@ typedef struct __user_cap_data_struct {
 #define VFS_CAP_U32_2           2
 #define XATTR_CAPS_SZ_2         (sizeof(__le32)*(1 + 2*VFS_CAP_U32_2))
 
+#define VFS_CAP_REVISION_3	0x03000000
+#define VFS_CAP_U32_3           VFS_CAP_U32_2
+#define XATTR_CAPS_SZ_3         (sizeof(__le32)+XATTR_CAPS_SZ_2)
+
+/*
+ * Kernel capabilities default to v2. The v3 VFS caps are only used,
+ * at present, for namespace specific filesystem capabilities.
+ */
 #define XATTR_CAPS_SZ           XATTR_CAPS_SZ_2
 #define VFS_CAP_U32             VFS_CAP_U32_2
 #define VFS_CAP_REVISION	VFS_CAP_REVISION_2
 
+#define _VFS_CAP_DATA_HEAD \
+	__le32 magic_etc;            /* Little endian */ \
+	struct {                                         \
+		__le32 permitted;    /* Little endian */ \
+		__le32 inheritable;  /* Little endian */ \
+	} data[VFS_CAP_U32]
+
 struct vfs_cap_data {
-	__le32 magic_etc;            /* Little endian */
-	struct {
-		__le32 permitted;    /* Little endian */
-		__le32 inheritable;  /* Little endian */
-	} data[VFS_CAP_U32];
+	_VFS_CAP_DATA_HEAD;
+};
+
+struct vfs_ns_cap_data {
+	_VFS_CAP_DATA_HEAD;
+	__le32 rootid;
 };
 
 #ifndef __KERNEL__
