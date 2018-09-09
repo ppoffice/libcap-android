@@ -16,8 +16,7 @@ cap_t cap_init(void)
     __u32 *raw_data;
     cap_t result;
 
-    raw_data = malloc( sizeof(__u32) + sizeof(*result) );
-
+    raw_data = calloc(1, sizeof(__u32) + sizeof(*result));
     if (raw_data == NULL) {
 	_cap_debug("out of memory");
 	errno = ENOMEM;
@@ -26,7 +25,6 @@ cap_t cap_init(void)
 
     *raw_data = CAP_T_MAGIC;
     result = (cap_t) (raw_data + 1);
-    memset(result, 0, sizeof(*result));
 
     result->head.version = _LIBCAP_CAPABILITY_VERSION;
     capget(&result->head, NULL);      /* load the kernel-capability version */
