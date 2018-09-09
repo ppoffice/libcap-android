@@ -31,6 +31,9 @@ release: distclean
 	cd .. && ln -s libcap libcap-$(VERSION).$(MINOR) && tar cvf libcap-$(VERSION).$(MINOR).tar libcap-$(VERSION).$(MINOR)/* && rm libcap-$(VERSION).$(MINOR)
 	cd .. && gpg -sba -u E2CCF3F4 libcap-$(VERSION).$(MINOR).tar
 
+test: all
+	cd progs && sudo ./quicktest.sh
+
 tagrelease: distclean
 	@echo "sign the tag twice: older DSA key; and newer RSA kernel.org key"
 	git tag -u D41A6DF2 -s libcap-$(VERSION).$(MINOR)
