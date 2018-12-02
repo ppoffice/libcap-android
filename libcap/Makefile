@@ -38,14 +38,15 @@ _makenames: _makenames.c cap_names.list.h
 	$(BUILD_CC) $(BUILD_CFLAGS) $< -o $@
 
 cap_names.h: _makenames
-	./_makenames > cap_names.h
+	@echo "done"
+	# ./_makenames > cap_names.h
 
 $(GPERF_OUTPUT): cap_names.list.h
 	perl -e 'print "struct __cap_token_s { const char *name; int index; };\n%{\nconst struct __cap_token_s *__cap_lookup_name(const char *, unsigned int);\n%}\n%%\n"; while ($$l = <>) { $$l =~ s/[\{\"]//g; $$l =~ s/\}.*// ; print $$l; }' < $< | gperf --ignore-case --language=ANSI-C --readonly --null-strings --global-table --hash-function-name=__cap_hash_name --lookup-function-name="__cap_lookup_name" -c -t -m20 $(INDENT) > $@
 
 cap_names.list.h: Makefile $(KERNEL_HEADERS)/linux/capability.h
 	@echo "=> making $@ from $(KERNEL_HEADERS)/linux/capability.h"
-	perl -e 'while ($$l=<>) { if ($$l =~ /^\#define[ \t](CAP[_A-Z]+)[ \t]+([0-9]+)\s+$$/) { $$tok=$$1; $$val=$$2; $$tok =~ tr/A-Z/a-z/; print "{\"$$tok\",$$val},\n"; } }' $(KERNEL_HEADERS)/linux/capability.h | fgrep -v 0x > $@
+	# perl -e 'while ($$l=<>) { if ($$l =~ /^\#define[ \t](CAP[_A-Z]+)[ \t]+([0-9]+)\s+$$/) { $$tok=$$1; $$val=$$2; $$tok =~ tr/A-Z/a-z/; print "{\"$$tok\",$$val},\n"; } }' $(KERNEL_HEADERS)/linux/capability.h | fgrep -v 0x > $@
 
 $(STALIBNAME): $(OBJS)
 	$(AR) rcs $@ $^
@@ -79,5 +80,5 @@ endif
 clean:
 	$(LOCALCLEAN)
 	rm -f $(OBJS) $(LIBNAME)* $(STALIBNAME) libcap.pc
-	rm -f cap_names.h cap_names.list.h _makenames $(GPERF_OUTPUT)
+	rm -f _makenames $(GPERF_OUTPUT)
 	cd include/sys && $(LOCALCLEAN)
